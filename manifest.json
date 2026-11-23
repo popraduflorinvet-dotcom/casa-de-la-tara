@@ -1,0 +1,26 @@
+{
+  "name": "Casa de la Țară – Evidența fermei",
+  "short_name": "Ferma Mea",
+  "description": "Evidența producției de ouă și a furajelor",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f6f1",
+  "theme_color": "#355b3e",
+  "lang": "ro",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

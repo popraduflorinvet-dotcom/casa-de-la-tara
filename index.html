@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#355b3e">\n<link rel="manifest" href="manifest.json">\n<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Casa de la Țară – Evidența fermei</title>
+<style>
+:root{--green:#355b3e;--bg:#f5f6f1;--card:#fff;--text:#202820;--muted:#687269;--line:#dfe5dc;--red:#a33b32}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--green);color:#fff;padding:22px 16px 18px;position:sticky;top:0;z-index:5}header h1{font-size:21px;margin:0 0 4px}header p{margin:0;font-size:13px;opacity:.88}
+nav{display:flex;gap:7px;padding:10px;background:var(--bg);position:sticky;top:78px;z-index:4;overflow:auto}
+nav button{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:20px;padding:9px 13px;white-space:nowrap;font-weight:600}
+nav button.active{background:var(--green);color:#fff;border-color:var(--green)}
+main{max-width:760px;margin:auto;padding:12px 14px 40px}.page{display:none}.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 13px;box-shadow:0 2px 6px #1d321008}
+h2{font-size:19px;margin:0 0 13px}h3{font-size:16px;margin:0 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.field label{font-size:13px;color:var(--muted);font-weight:600}
+input,select{width:100%;font:inherit;border:1px solid #cbd4c8;border-radius:10px;padding:11px;background:#fff;color:var(--text);min-width:0}
+button.primary{background:var(--green);color:white;border:0;border-radius:11px;padding:12px 16px;font:600 15px system-ui;width:100%}
+button.secondary{background:#edf2eb;color:var(--green);border:1px solid #d3dfd0;border-radius:10px;padding:10px 12px;font:600 14px system-ui}
+button.danger{background:#fff0ee;color:var(--red);border:1px solid #f0d0cc;border-radius:10px;padding:8px 10px;font:600 13px system-ui}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f4f7f2;border-radius:12px;padding:12px}.stat small{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font-size:21px;margin-top:3px;overflow-wrap:anywhere}
+.rowitem{border-top:1px solid var(--line);padding:12px 0;display:flex;gap:10px;justify-content:space-between;align-items:center}.rowitem:first-child{border-top:0}.rowitem .meta{font-size:13px;color:var(--muted);margin-top:3px}.actions{display:flex;gap:6px;flex-shrink:0}
+.note{font-size:13px;color:var(--muted);line-height:1.45}.hidden{display:none!important}.reportline{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}.reportline:last-child{border-bottom:0}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stat strong{font-size:18px}}
+</style>
+</head>
+<body>
+<header><h1>Casa de la Țară</h1><p>Evidența producției de ouă și a furajelor</p></header>
+<nav>
+<button class="active" data-tab="home">Rezumat</button><button data-tab="eggs">Ouă</button><button data-tab="feed">Furaje</button><button data-tab="reports">Rapoarte</button><button data-tab="backup">Date</button>
+</nav>
+<main>
+<section id="home" class="page active">
+<div class="card"><h2>Rezumatul perioadei</h2><div class="field"><label for="homeDate">Data</label><input type="date" id="homeDate" min="2026-01-01"></div><div class="stats" id="homeStats"></div></div>
+<div class="card"><h3>Înregistrări recente</h3><div id="recent"></div></div>
+</section>
+<section id="eggs" class="page">
+<div class="card"><h2 id="eggTitle">Înregistrare ouă</h2><form id="eggForm">
+<div class="field"><label for="eggDate">Data</label><input type="date" id="eggDate" min="2026-01-01" required><button type="button" class="secondary" id="eggToday" style="margin-top:6px">Alege astăzi</button></div>
+<div class="grid"><div class="field"><label for="collected">Ouă strânse</label><input type="number" id="collected" min="0" step="1" value="0" required></div><div class="field"><label for="sold">Ouă vândute</label><input type="number" id="sold" min="0" step="1" value="0" required></div></div>
+<div class="field"><label for="income">Bani încasați (lei)</label><input type="number" id="income" min="0" step="0.01" value="0" required></div>
+<button class="primary" type="submit">Salvează înregistrarea</button><button type="button" class="secondary hidden" id="cancelEgg" style="width:100%;margin-top:8px">Renunță la modificare</button>
+</form></div>
+<div class="card"><h3>Înregistrări de ouă</h3><p class="note">Poți adăuga sau corecta date începând cu 01.01.2026. Nu se calculează stocul de ouă.</p><div id="eggList"></div></div>
+</section>
+<section id="feed" class="page">
+<div class="card"><h2 id="feedTitle">Cumpărare furaje</h2><form id="feedForm">
+<div class="field"><label for="feedDate">Data cumpărării</label><input type="date" id="feedDate" min="2026-01-01" required><button type="button" class="secondary" id="feedToday" style="margin-top:6px">Alege astăzi</button></div>
+<div class="grid"><div class="field"><label for="kg">Cantitate (kg)</label><input type="number" id="kg" min="0.01" step="0.01" required></div><div class="field"><label for="feedCost">Valoare (lei)</label><input type="number" id="feedCost" min="0" step="0.01" required></div></div>
+<div class="field"><label for="feedNote">Observații (opțional)</label><input id="feedNote" maxlength="100" placeholder="ex. porumb, șrot..."></div>
+<button class="primary" type="submit">Salvează cumpărarea</button><button type="button" class="secondary hidden" id="cancelFeed" style="width:100%;margin-top:8px">Renunță la modificare</button>
+</form></div>
+<div class="card"><h3>Cumpărări de furaje</h3><div id="feedList"></div></div>
+</section>
+<section id="reports" class="page">
+<div class="card"><h2>Rapoarte</h2>
+<div class="field"><label for="reportType">Tip raport</label><select id="reportType"><option value="week">Săptămânal</option><option value="month">Lunar</option><option value="year">Anual</option><option value="custom">Între două date</option></select></div>
+<div class="field" id="periodField"><label for="period">Perioadă</label><input type="week" id="period" value="2026-W01"></div>
+<div class="field hidden" id="monthField"><label for="month">Lună</label><input type="month" id="month" value="2026-01"></div>
+<div class="field hidden" id="yearField"><label for="year">An</label><select id="year"></select></div>
+<div class="grid hidden" id="customFields"><div class="field"><label for="from">De la</label><input type="date" id="from" min="2026-01-01"></div><div class="field"><label for="to">Până la</label><input type="date" id="to" min="2026-01-01"></div></div>
+<button class="primary" id="makeReport" type="button">Generează raport</button></div>
+<div class="card"><h3 id="reportHeading">Rezultatul raportului</h3><div id="reportResult" class="note">Alege perioada și apasă „Generează raport”.</div><button class="secondary" id="exportReport" type="button" style="width:100%;margin-top:12px">Descarcă raport CSV</button></div>
+</section>
+<section id="backup" class="page">
+<div class="card"><h2>Salvare și transfer date</h2><p class="note">Datele se păstrează în memoria acestui browser pe telefon. Exportă periodic o copie de siguranță.</p><button class="primary" id="exportBackup">Exportă copie de siguranță (JSON)</button><div class="field" style="margin-top:14px"><label for="importFile">Restaurare copie de siguranță</label><input type="file" id="importFile" accept=".json,application/json"></div><button class="secondary" id="exportAllCsv" style="width:100%">Exportă toate datele în CSV</button><p class="note">Pentru a folosi datele pe alt telefon, exportă copia JSON și import-o pe celălalt dispozitiv.</p></div>
+</section>
+</main>
+<script>
+const KEY='casaTaraEggFarm_v1';
+let data={eggs:[],feeds:[]}, editEgg=null,editFeed=null,lastReport=null;
+const $=id=>document.getElementById(id);
+const today=new Date();const isoToday=new Date(today.getTime()-today.getTimezoneOffset()*60000).toISOString().slice(0,10);
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&Array.isArray(x.eggs)&&Array.isArray(x.feeds))data=x}catch(e){}}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function money(n){return (Number(n)||0).toLocaleString('ro-RO',{minimumFractionDigits:2,maximumFractionDigits:2})+' lei'}
+function num(n){return (Number(n)||0).toLocaleString('ro-RO')}
+function dateLabel(s){if(!s)return '';return new Date(s+'T12:00:00').toLocaleDateString('ro-RO')}
+function sum(arr,k){return arr.reduce((a,x)=>a+(Number(x[k])||0),0)}
+function showTab(t){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===t));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t))}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function sorted(arr){return [...arr].sort((a,b)=>b.date.localeCompare(a.date))}
+function recordHtml(type,x){let title=type==='egg'?`${num(x.collected)} strânse · ${num(x.sold)} vândute`:`${num(x.kg)} kg · ${money(x.cost)}`;let sub=type==='egg'?`Încasări: ${money(x.income)}`:`${money(x.cost/(x.kg||1))}/kg${x.note?' · '+esc(x.note):''}`;return `<div class="rowitem"><div><strong>${dateLabel(x.date)}</strong><div>${title}</div><div class="meta">${sub}</div></div><div class="actions"><button class="secondary" onclick="editRecord('${type}','${x.id}')">Editează</button><button class="danger" onclick="deleteRecord('${type}','${x.id}')">Șterge</button></div></div>`}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderAll(){renderLists();renderHome()}
+function renderLists(){$('eggList').innerHTML=sorted(data.eggs).map(x=>recordHtml('egg',x)).join('')||'<p class="note">Nu există înregistrări.</p>';$('feedList').innerHTML=sorted(data.feeds).map(x=>recordHtml('feed',x)).join('')||'<p class="note">Nu există cumpărări.</p>'}
+function renderHome(){let d=$('homeDate').value||isoToday;let es=data.eggs.filter(x=>x.date===d),fs=data.feeds.filter(x=>x.date===d);$('homeStats').innerHTML=`<div class="stat"><small>Ouă strânse</small><strong>${num(sum(es,'collected'))}</strong></div><div class="stat"><small>Ouă vândute</small><strong>${num(sum(es,'sold'))}</strong></div><div class="stat"><small>Încasări</small><strong>${money(sum(es,'income'))}</strong></div><div class="stat"><small>Furaje cumpărate</small><strong>${num(sum(fs,'kg'))} kg</strong><small>${money(sum(fs,'cost'))}</small></div>`;$('recent').innerHTML=[...sorted(data.eggs).slice(0,3).map(x=>recordHtml('egg',x)),...sorted(data.feeds).slice(0,2).map(x=>recordHtml('feed',x))].join('')||'<p class="note">Adaugă prima înregistrare.</p>'}
+function resetEgg(){editEgg=null;$('eggForm').reset();$('eggDate').value=isoToday;$('eggTitle').textContent='Înregistrare ouă';$('cancelEgg').classList.add('hidden')}
+function resetFeed(){editFeed=null;$('feedForm').reset();$('feedDate').value=isoToday;$('feedTitle').textContent='Cumpărare furaje';$('cancelFeed').classList.add('hidden')}
+$('eggForm').onsubmit=e=>{e.preventDefault();let x={id:editEgg||crypto.randomUUID(),date:$('eggDate').value,collected:+$('collected').value,sold:+$('sold').value,income:+$('income').value};if(x.date<'2026-01-01')return alert('Data trebuie să fie 01.01.2026 sau mai recentă.');if(editEgg)data.eggs=data.eggs.map(a=>a.id===editEgg?x:a);else data.eggs.push(x);resetEgg();save()};
+$('feedForm').onsubmit=e=>{e.preventDefault();let x={id:editFeed||crypto.randomUUID(),date:$('feedDate').value,kg:+$('kg').value,cost:+$('feedCost').value,note:$('feedNote').value.trim()};if(x.date<'2026-01-01')return alert('Data trebuie să fie 01.01.2026 sau mai recentă.');if(editFeed)data.feeds=data.feeds.map(a=>a.id===editFeed?x:a);else data.feeds.push(x);resetFeed();save()};
+$('cancelEgg').onclick=resetEgg;$('cancelFeed').onclick=resetFeed;
+$('eggToday').onclick=()=>{$('eggDate').value=isoToday};
+$('feedToday').onclick=()=>{$('feedDate').value=isoToday};
+window.editRecord=(type,id)=>{let x=(type==='egg'?data.eggs:data.feeds).find(a=>a.id===id);if(!x)return;if(type==='egg'){editEgg=id;$('eggDate').value=x.date;$('collected').value=x.collected;$('sold').value=x.sold;$('income').value=x.income;$('eggTitle').textContent='Modifică înregistrarea';$('cancelEgg').classList.remove('hidden');showTab('eggs')}else{editFeed=id;$('feedDate').value=x.date;$('kg').value=x.kg;$('feedCost').value=x.cost;$('feedNote').value=x.note||'';$('feedTitle').textContent='Modifică cumpărarea';$('cancelFeed').classList.remove('hidden');showTab('feed')}}
+window.deleteRecord=(type,id)=>{if(!confirm('Ștergi această înregistrare?'))return;if(type==='egg')data.eggs=data.eggs.filter(x=>x.id!==id);else data.feeds=data.feeds.filter(x=>x.id!==id);save()};
+$('homeDate').onchange=renderHome;
+$('reportType').onchange=()=>{let t=$('reportType').value;$('periodField').classList.toggle('hidden',t!=='week');$('monthField').classList.toggle('hidden',t!=='month');$('yearField').classList.toggle('hidden',t!=='year');$('customFields').classList.toggle('hidden',t!=='custom')};
+function range(){let t=$('reportType').value,start,end;if(t==='week'){let v=$('period').value;if(!v)return null;let [y,w]=v.split('-W').map(Number);let jan4=new Date(Date.UTC(y,0,4));let monday=new Date(jan4);monday.setUTCDate(jan4.getUTCDate()-(jan4.getUTCDay()||7)+1+(w-1)*7);let sunday=new Date(monday);sunday.setUTCDate(monday.getUTCDate()+6);start=monday.toISOString().slice(0,10);end=sunday.toISOString().slice(0,10);if(start<'2026-01-01')start='2026-01-01'}else if(t==='month'){let v=$('month').value;if(!v)return null;start=v+'-01';let d=new Date(Number(v.slice(0,4)),Number(v.slice(5,7)),0);end=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}else if(t==='year'){let y=$('year').value;start=y+'-01-01';end=y+'-12-31'}else{start=$('from').value;end=$('to').value}if(!start||!end||start>end||start<'2026-01-01')return null;return {start,end}}
+$('makeReport').onclick=()=>{let r=range();if(!r)return alert('Verifică perioada selectată. Data de început trebuie să fie cel puțin 01.01.2026.');let eggs=data.eggs.filter(x=>x.date>=r.start&&x.date<=r.end),feeds=data.feeds.filter(x=>x.date>=r.start&&x.date<=r.end);lastReport={...r,eggs,feeds};$('reportHeading').textContent=`Raport ${dateLabel(r.start)} – ${dateLabel(r.end)}`;$('reportResult').innerHTML=`<div class="reportline"><span>Ouă strânse</span><strong>${num(sum(eggs,'collected'))}</strong></div><div class="reportline"><span>Ouă vândute</span><strong>${num(sum(eggs,'sold'))}</strong></div><div class="reportline"><span>Încasări din ouă</span><strong>${money(sum(eggs,'income'))}</strong></div><div class="reportline"><span>Furaje cumpărate</span><strong>${num(sum(feeds,'kg'))} kg</strong></div><div class="reportline"><span>Cheltuieli furaje</span><strong>${money(sum(feeds,'cost'))}</strong></div><div class="reportline"><span>Diferență încasări − furaje</span><strong>${money(sum(eggs,'income')-sum(feeds,'cost'))}</strong></div><p class="note">Diferența este calculată doar față de cheltuielile cu furajele înregistrate.</p>`};
+function csv(rows){return '\ufeff'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n')}
+function download(name,content,type='text/csv;charset=utf-8'){let blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('exportReport').onclick=()=>{if(!lastReport)return alert('Generează mai întâi un raport.');let rows=[['Categorie','Data','Ouă strânse','Ouă vândute','Încasări lei','Cantitate kg','Cheltuieli lei','Observații']];lastReport.eggs.forEach(x=>rows.push(['Ouă',x.date,x.collected,x.sold,x.income,'','','']));lastReport.feeds.forEach(x=>rows.push(['Furaje',x.date,'','','',x.kg,x.cost,x.note||'']));download('raport-ferma.csv',csv(rows))};
+$('exportBackup').onclick=()=>download('casa-de-la-tara-backup.json',JSON.stringify(data,null,2),'application/json');
+$('importFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let x=JSON.parse(await f.text());if(!Array.isArray(x.eggs)||!Array.isArray(x.feeds))throw 0;if(!confirm('Importul va înlocui datele existente. Continui?'))return;data=x;save();alert('Copia a fost restaurată.')}catch(err){alert('Fișier invalid sau incompatibil.')}e.target.value=''};
+$('exportAllCsv').onclick=()=>{let rows=[['Categorie','Data','Ouă strânse','Ouă vândute','Încasări lei','Cantitate kg','Cheltuieli lei','Observații']];data.eggs.forEach(x=>rows.push(['Ouă',x.date,x.collected,x.sold,x.income,'','','']));data.feeds.forEach(x=>rows.push(['Furaje',x.date,'','','',x.kg,x.cost,x.note||'']));download('evidenta-ferma-completa.csv',csv(rows))};
+load();$('homeDate').value=isoToday;$('eggDate').value=isoToday;$('feedDate').value=isoToday;
+for(let y=2026;y<=new Date().getFullYear()+1;y++)$('year').add(new Option(y,y));$('year').value='2026';$('month').value='2026-01';$('period').value='2026-W01';$('from').value='2026-01-01';$('to').value=isoToday;renderAll();
+</script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>\n</body></html>
